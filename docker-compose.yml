@@ -1,0 +1,20 @@
+version: '3'
+services:
+#  app-alchemy:
+#    build: .
+#    container_name: api-alchemy
+#    volumes:
+#      - ./app:/app
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      database-alchemy:
+#        condition: service_started
+  database-alchemy:
+    image: "postgres"
+    container_name: api-alchemy-db
+    env_file:
+      - database.env
+    ports:
+      - "5432:5432"
+
