@@ -2,20 +2,24 @@ from fastapi import APIRouter
 from config.db import conn, session
 from models.user import users
 from schemas.user import User
+from sqlalchemy import select
 
 user_route = APIRouter()
 
 
 @user_route.get("/")
-async def read_data():
-    data = session.query(users).all()
+def read_data():
+    query = select(users)
+    data = session.execute(query).all()
+    data = [tuple(row) for row in data]
     return data
-    # return conn.execute(users.select()).fetchall()
 
 
 @user_route.get("/{id}")
-async def read_data(id: int):
-    return conn.execute(users.select().where(users.c.id == id)).fetchall()
+async def read_data(user_id: int):
+    query = select(users).where(users.c.id == user_id)
+    data = conn.execute(query).fetchall()
+    return [tuple(row) for row in data]
 
 
 @user_route.post("/")
@@ -26,21 +30,24 @@ async def write_data(user: User):
         password=user.password
     ))
     conn.commit()
-    return conn.execute(users.select()).fetchall()
+    data = conn.execute(users.select()).fetchall()
+    return [tuple(row) for row in data]
 
 
 @user_route.put("/{id}")
-async def update_data(id:int,user: User):
-    conn.execute(users.update(
+async def update_data(user_id: int, user: User):
+    conn.execute(users.update().values(
         name=user.name,
         email=user.email,
         password=user.password
-    ).where(users.c.id == id))
-    return conn.execute(users.select()).fetchall()
+    ).where(users.c.id == user_id))
+    data = conn.execute(users.select()).fetchall()
+    return [tuple(row) for row in data]
 
 
 @user_route.delete("/")
 async def delete_data():
     conn.execute(users.delete().where(users.c.id == id))
-    return conn.execute(users.select()).fetchall()
+    data = conn.execute(users.select()).fetchall()
+    return [tuple(row) for row in data]
 
