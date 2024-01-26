@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from config.db import get_session
 
 from database_models import User
-from schemas.user import UserModel
+from schemas.user import UserModelRequest
 from sqlalchemy import select, update, insert, delete
 
 user_route = APIRouter()
@@ -24,7 +24,7 @@ async def read_data(user_id: int):
 
 
 @user_route.post("/")
-async def write_data(user: UserModel):
+async def write_data(user: UserModelRequest):
     with get_session() as session:
         query = (
             insert(User).values(
@@ -39,7 +39,7 @@ async def write_data(user: UserModel):
 
 
 @user_route.put("/{id}")
-async def update_data(user_id:int, user:UserModel):
+async def update_data(user_id: int, user: UserModelRequest):
     with get_session() as session:
         query = (
             update(User).values(
@@ -54,7 +54,7 @@ async def update_data(user_id:int, user:UserModel):
 
 
 @user_route.delete("/")
-async def delete_data(user_id:int):
+async def delete_data(user_id: int):
     with get_session() as session:
         query = (
             delete(User).where(User.id == user_id)
