@@ -2,8 +2,10 @@ from fastapi import APIRouter
 from config.db import get_session
 
 from database_models import User
+from exceptions import UserNotExists
 from schemas.user import UserModelRequest
 from sqlalchemy import select, update, insert, delete
+
 
 user_route = APIRouter()
 
@@ -17,10 +19,11 @@ def read_data():
 
 @user_route.get("/{id}")
 async def read_data(user_id: int):
-    with get_session() as session:
-        query = (select(User).where(User.id == user_id).limit(1))
-        user_info = session.execute(query)
-        return user_info.scalars().first()
+    user = get_user_by_id(user_id)
+    if user:
+        return user
+    else:
+        raise UserNotExists(f"No such User with id {user_id}")
 
 
 @user_route.post("/")
@@ -61,6 +64,13 @@ async def delete_data(user_id: int):
         )
         session.execute(query)
         session.commit()
+
+
+def get_user_by_id(user_id):
+    with get_session() as session:
+        query = (select(User).where(User.id == user_id).limit(1))
+        user_info = session.execute(query)
+        return user_info.scalars().first()
 
 
 
